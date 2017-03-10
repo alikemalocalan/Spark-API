@@ -4,4 +4,4 @@ Apache Spark Recommendation/DataMinig Api Service
 
 cd /spark-installion-path/sbin
 
-./spark-submit --master local --total-executor-cores 14 --executor-memory 6g server.py
+./spark-submit --master local --total-executor-cores 4 --executor-memory 3g server.py
