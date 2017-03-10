@@ -3,8 +3,6 @@ from pyspark import Row
 
 basePath = "/home/alikemal/oyunlar/bitirme/"
 song_genre_txt = basePath + "msd_tagtraum_cd2.cls"
-artist_txt = basePath + "unique_artists.txt"
-user_stat_txt = basePath + "train_triplets.txt"
 
 tracks_txt = "dataset/unique_tracks.txt"
 peoples_txt = "dataset/people.txt"
@@ -15,12 +13,15 @@ class RecommendationEngine:
         """Init the recommendation engine given a Spark context and a dataset path
         """
 
-        # People table create
         self.spark = spark
         sc = self.spark.sparkContext
+
+        # Song table create
         track_line = sc.textFile(tracks_txt)
         track_parts = track_line.map(lambda l: l.split(","))
         songs = track_parts.map(lambda p: Row(trackID=p[0], songID=p[1], artistName=p[2], songTitle=p[3]))
+
+        # Infer the schema, and register the DataFrame as a table.
         schemaSongs = self.spark.createDataFrame(songs)
         schemaSongs.createOrReplaceTempView("song")
 
@@ -34,10 +35,11 @@ class RecommendationEngine:
         schemaPeople.createOrReplaceTempView("people")
 
     def songsbySinger(self, singer_name):
-        # result = schemaSongs \
-        #     .select("*") \
+        #  Alternative
+        # result = self.schemaSongs \
+        #     .filter(self.schemaPeople.columns('artistName')== singer_name) \
         #     .limit(20) \
-        #     .collect()
+        #     .show()
         result = self.spark.sql("SELECT * FROM song WHERE artistName LIKE '%s' LIMIT 20" % singer_name).collect()
         return json.dumps(result)
 
