@@ -6,7 +6,8 @@ song_genre_txt = basePath + "msd_tagtraum_cd2.cls"
 artist_txt = basePath + "unique_artists.txt"
 tracks_txt = basePath + "unique_tracks.txt"
 user_stat_txt = basePath + "train_triplets.txt"
-peoples_txt = basePath + "people.txt"
+
+peoples_txt = "dataset/people.txt"
 
 
 class RecommendationEngine:
