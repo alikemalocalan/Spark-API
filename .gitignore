@@ -3,3 +3,8 @@
 *.iml
 out
 gen
+/dataset/unique_tracks.txt
+__pycache__/
+dataset/unique_tracks.txt
+spark-warehouse/
+static/

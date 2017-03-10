@@ -4,9 +4,9 @@ from pyspark import Row
 basePath = "/home/alikemal/oyunlar/bitirme/"
 song_genre_txt = basePath + "msd_tagtraum_cd2.cls"
 artist_txt = basePath + "unique_artists.txt"
-tracks_txt = basePath + "unique_tracks.txt"
 user_stat_txt = basePath + "train_triplets.txt"
 
+tracks_txt = "dataset/unique_tracks.txt"
 peoples_txt = "dataset/people.txt"
 
 
@@ -20,7 +20,7 @@ class RecommendationEngine:
         sc = self.spark.sparkContext
         track_line = sc.textFile(tracks_txt)
         track_parts = track_line.map(lambda l: l.split(","))
-        songs = track_parts.map(lambda p: Row(trackID=p, songID=p, artistName=p, songTitle=p))
+        songs = track_parts.map(lambda p: Row(trackID=p[0], songID=p[1], artistName=p[2], songTitle=p[3]))
         schemaSongs = self.spark.createDataFrame(songs)
         schemaSongs.createOrReplaceTempView("song")
 
@@ -35,11 +35,10 @@ class RecommendationEngine:
 
     def songsbySinger(self, singer_name):
         # result = schemaSongs \
-        #     .filter("artistName LIKE 'A%' ") \
         #     .select("*") \
         #     .limit(20) \
         #     .collect()
-        result = self.spark.sql("SELECT * FROM song LIMIT 20").collect()
+        result = self.spark.sql("SELECT * FROM song WHERE artistName LIKE '%s' LIMIT 20" % singer_name).collect()
         return json.dumps(result)
 
     def people(self, age):
