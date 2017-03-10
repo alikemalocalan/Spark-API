@@ -3,29 +3,22 @@ from pyspark.sql import SparkSession
 
 from recommendationEngine import RecommendationEngine
 
-basePath = "/home/alikemal/oyunlar/bitirme/"
-song_genre_txt = basePath + "msd_tagtraum_cd2.cls"
-artist_txt = basePath + "unique_artists.txt"
-tracks_txt = basePath + "unique_tracks.txt"
-user_stat_txt = basePath + "train_triplets.txt"
-peoples_txt = basePath + "people.txt"
-
 app = Flask(__name__)
 
 
 @app.route('/')
-def hello_world():
+def index():
     return 'Hello World!'
 
 
-@app.route('/people')
-def merhaba():
-    return engine.people(peoples_txt)
+@app.route('/people/<age>')
+def people(age):
+    return engine.people(age)
 
 
 @app.route('/songbysinger/<singer_name>')
 def song(singer_name):
-    return engine.songsbySinger(singer_name, tracks_txt)
+    return engine.songsbySinger(singer_name)
 
 
 def init_spark_context():
