@@ -8,3 +8,11 @@ __pycache__/
 dataset/unique_tracks.txt
 spark-warehouse/
 static/
+/dataset/msd-MAGD-genreAssignment.cls
+dataset/msd-MAGD-genreAssignment.cls
+/derby.log
+/app.log
+app.log
+derby.log
+doc/
+metastore_db/
