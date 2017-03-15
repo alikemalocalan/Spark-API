@@ -5,6 +5,8 @@ from pyspark import Row
 from pyspark import StorageLevel
 from pyspark.sql import SparkSession
 
+from LogModels import UserLog
+
 
 def sparktest():
     spark = SparkSession \
@@ -55,12 +57,12 @@ def save_response(resp):
     return resp_data
 
 
+app.before_request(bind_request_params)
+
+
 @app.before_request
 def before_request():
-    print(request.method, request.path)
-
-
-app.before_request(bind_request_params)
+    print(request.method, request.path, jsonify(request.params))
 
 
 @app.after_request
@@ -68,6 +70,7 @@ def after_request(resp):
     resp.headers.add('Access-Control-Allow-Origin', '*')
     resp.headers.add('Access-Control-Allow-Headers', 'Content-Type, X-Token')
     resp.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+    resp.headers['Content-Type'] = 'application/json'
     resp.headers['server'] = 'BitirmeServer'
     save_response(resp)
     return resp
@@ -75,6 +78,12 @@ def after_request(resp):
 
 @app.route('/')
 def index():
+    UserLog(email="alikemal@gmail.com",
+            # Use `force_insert` so that we get a DuplicateKeyError if
+            # another user already exists with the same email address.
+            # Without this option, we will update (replace) the user with
+            # the same id (email).
+            password="123456").save(force_insert=True)
     return jsonify(request.params)
 
 
