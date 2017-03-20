@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return 'Hello World!'
+    return jsonify(engine.songsbySingerFast())
 
 
 @app.route('/people/<age>')

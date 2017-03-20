@@ -2,7 +2,6 @@ from flask import Flask, jsonify
 from flask import request
 from flask_request_params import bind_request_params
 from pyspark import Row
-from pyspark import StorageLevel
 from pyspark.sql import SparkSession
 
 from LogModels import UserLog
@@ -18,19 +17,28 @@ def sparktest():
 
     tracks_txt = "dataset/unique_tracks.txt"
 
-    track_line = sc.textFile(tracks_txt)
+    track_raw_RDD = sc.textFile(tracks_txt)
 
-    track_parts = track_line.map(lambda l: l.split(",")) \
+    track_parts = track_raw_RDD.map(lambda l: l.split(",")) \
         .map(lambda p: Row(trackID=p[0], songID=p[1], artistName=p[2], songTitle=p[3])) \
-        .persist(StorageLevel.MEMORY_ONLY) \
         .cache()
 
     schemaSongs = spark.createDataFrame(track_parts)
+    schemaSongs.createOrReplaceTempView("song")
+    print("\n\n AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
-    singer = 'Kruiz'
     result = schemaSongs \
-        .filter(schemaSongs.artistName == singer) \
+        .limit(10) \
+        .orderBy(schemaSongs.artistName)
+    print("\n\n BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+    name = input("Devam ici bir karacter? ")
+
+    result1 = result \
+        .limit(10) \
+        .orderBy(result.songTitle) \
         .show()
+
+    print("\n\n CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
 
 
 app = Flask(__name__)
@@ -88,4 +96,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run()
+    sparktest()
