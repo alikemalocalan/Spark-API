@@ -63,3 +63,59 @@ class Post(MongoModel):
         if len(self.body) > 100:
             return self.body[:97] + '...'
         return self.body
+
+
+# Şarkı modeli
+"""
+{
+        "artist": {
+          "#text": "Emel mathlouthi",
+          "mbid": "f8c63f5f-4329-4511-8fe4-d8d8f146f455"
+        },
+        "name": "Kelmti Horra (My Word Is Free)",
+        "streamable": "0",
+        "mbid": "",
+        "album": {
+          "#text": "Kelmti Horra - EP",
+          "mbid": ""
+        },
+        "url": "https://www.last.fm/music/Emel+mathlouthi/_/Kelmti+Horra+(My+Word+Is+Free)",
+        "image": [
+          {
+            "#text": "https://lastfm-img2.akamaized.net/i/u/34s/62a1142570a846249bce573cde499233.png",
+            "size": "small"
+          },
+          {
+            "#text": "https://lastfm-img2.akamaized.net/i/u/64s/62a1142570a846249bce573cde499233.png",
+            "size": "medium"
+          },
+          {
+            "#text": "https://lastfm-img2.akamaized.net/i/u/174s/62a1142570a846249bce573cde499233.png",
+            "size": "large"
+          },
+          {
+            "#text": "https://lastfm-img2.akamaized.net/i/u/300x300/62a1142570a846249bce573cde499233.png",
+            "size": "extralarge"
+          }
+        ],
+        "@attr": {
+          "nowplaying": "true"
+        }
+      }
+"""
+# kullanıcı geçmiş modeli
+"""
+{
+  "recenttracks": {
+    "track": [],
+    "@attr": {
+      "user": "alikemalocalan",
+      "page": "1",
+      "perPage": "50",
+      "totalPages": "2",
+      "total": "79"
+    }
+  }
+}
+
+"""
