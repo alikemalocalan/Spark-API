@@ -31,7 +31,6 @@ def sparktest():
         .limit(10) \
         .orderBy(schemaSongs.artistName)
     print("\n\n BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-    name = input("Devam ici bir karacter? ")
 
     result1 = result \
         .limit(10) \
