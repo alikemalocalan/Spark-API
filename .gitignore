@@ -16,3 +16,4 @@ app.log
 derby.log
 doc/
 metastore_db/
+sparke-Java/src/main/resources/

@@ -3,6 +3,7 @@ package com.controller;
 import com.SparkEngine.Recommendation;
 import spark.Request;
 import spark.Response;
+import spark.Route;
 
 import static spark.Spark.get;
 
@@ -12,9 +13,8 @@ import static spark.Spark.get;
 public class SongController {
 
     public SongController(final Recommendation sparkService) {
-        get("/songs", (Request request, Response response) -> {
+        get("/songs", (request, response) -> {
             response.type("application/json");
-
             return new Recommendation().getSongs();
         });
     }
