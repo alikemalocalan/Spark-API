@@ -17,3 +17,14 @@ derby.log
 doc/
 metastore_db/
 sparke-Java/src/main/resources/
+/sparke-Java/spark-example.iml
+dataset/jam_to_msd-new.tsv
+dataset/msd-MAGD-genreAssignment-new.cls
+dataset/train_triplets-new.txt
+dataset/train_triplets.txtaa
+sparke-Java/src/main/java/com/logging/
+sparke-Java/src/main/java/com/model/Song.java
+sparke-Java/src/main/java/com/model/Tag.java
+sparke-Java/src/main/java/com/model/UserSales.java
+sparke-Java/src/main/java/com/model/UserStat.java
+sparke-Java/target/
