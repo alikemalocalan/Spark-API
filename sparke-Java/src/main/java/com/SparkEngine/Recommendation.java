@@ -27,7 +27,7 @@ public class Recommendation {
     private static final String price_txt = base_txt + "train_triplets.txtaa";
     private static final String userStat_txt = base_txt + "jam_to_msd-new.tsv";
     private static final String tracks_txt = base_txt + "unique_tracks.txt";
-    private static final String master = "local[*]";
+    private static final String master = "local";
     private SparkSession spark = null;
 
     public Recommendation() {
@@ -37,24 +37,22 @@ public class Recommendation {
                 .setMaster(master);
         spark = SparkSession
                 .builder()
-                .appName("Java Spark SQL basic example")
                 .config(conf)
                 .getOrCreate();
+
+
+        final JavaRDD<String> songRead = spark.read().textFile(tracks_txt).toJavaRDD();
+        final JavaRDD<String> userSalesRead = spark.read().textFile(price_txt).toJavaRDD();
+        final JavaRDD<String> tagRead = spark.read().textFile(tag_txt).javaRDD();
+        final JavaRDD<String> userRead = spark.read().textFile(userStat_txt).javaRDD();
 
         //******************************************
 
 
-        JavaRDD<Song> songRDD = spark.read()
-                .textFile(tracks_txt)
-                .javaRDD()
+        JavaRDD<Song> songRDD = songRead
                 .map(lineRAW -> {
                     String[] parts = lineRAW.split(",");
-                    Song line = new Song();
-                    line.setTrackID(parts[0]);
-                    line.setSongID(parts[1]);
-                    line.setSongTitle(parts[2]);
-                    line.setArtistTitle(parts[3]);
-                    return line;
+                    return new Song(parts[0], parts[1], parts[2], parts[3]);
                 });
 
         Dataset<Row> songDF = spark.createDataFrame(songRDD, Song.class);
@@ -63,34 +61,22 @@ public class Recommendation {
         //******************************************
 
 
-        JavaRDD<UserSales> songPriceRDD = (JavaRDD<UserSales>) spark.read()
-                .textFile(price_txt)
-                .javaRDD()
-                .map(lineRAW -> {
-                    String[] parts = lineRAW.split(",");
-                    UserSales price = new UserSales();
-                    price.setUserID(parts[0]);
-                    price.setTrackID(parts[1]);
-                    price.setPrice(parts[2]);
-                    return price;
-                });
+        JavaRDD<UserSales> salesRDD = userSalesRead.map(lineRAW -> {
+            String[] parts = lineRAW.split(",");
+            return new UserSales(parts[1], parts[0], parts[2]);
+        });
 
-        Dataset<Row> songPriceDF = spark.createDataFrame(songPriceRDD, UserSales.class);
+        Dataset<Row> songPriceDF = spark.createDataFrame(salesRDD, UserSales.class);
         songPriceDF.createOrReplaceTempView("usersongPrice");
 
 
         //******************************************
 
 
-        JavaRDD<Tag> tagRDD = spark.read()
-                .textFile(tag_txt)
-                .javaRDD()
+        JavaRDD<Tag> tagRDD = tagRead
                 .map(lineRAW -> {
                     String[] parts = lineRAW.split(",");
-                    Tag tag = new Tag();
-                    tag.setTrackID(parts[0]);
-                    tag.setTagID(parts[1]);
-                    return tag;
+                    return new Tag(parts[0], parts[1]);
                 });
 
         Dataset<Row> tagDF = spark.createDataFrame(tagRDD, Tag.class);
@@ -100,15 +86,10 @@ public class Recommendation {
         //******************************************
 
 
-        JavaRDD<UserStat> userRDD = spark.read()
-                .textFile(userStat_txt)
-                .javaRDD()
+        JavaRDD<UserStat> userRDD = userRead
                 .map(lineRAW -> {
                     String[] parts = lineRAW.split(",");
-                    UserStat stat = new UserStat();
-                    stat.setUserID(parts[0]);
-                    stat.setTrackID(parts[1]);
-                    return stat;
+                    return new UserStat(parts[1], parts[0]);
                 });
 
         Dataset<Row> userDf = spark.createDataFrame(userRDD, UserStat.class);
@@ -116,23 +97,25 @@ public class Recommendation {
     }
 
     public List<String> getSongs() {
-        Dataset<Row> result = spark.sql("SELECT * FROM song limit 1");
+        Dataset<Row> result = spark.sql("SELECT * FROM song limit 100");
         return result.toJSON().collectAsList();
     }
 
     public String getSongbyTrackID(String trackID) {
-        Dataset<Row> result = spark.sql("SELECT * FROM song limit 1").filter(new Column("trackID").equalTo(trackID));
+        Dataset<Row> result = spark.sql("SELECT * FROM song limit 100").filter(new Column("trackID").equalTo(trackID));
         return result.toJSON().collectAsList().get(0);
     }
 
     public List<String> getStats() {
-        Dataset<Row> result = spark.sql("SELECT * " +
+        Dataset<Row> result = spark.sql("SELECT *   " +
                 "FROM userStat st" +
-                " INNER JOIN tag t ON" +
-                " st.trackID= t.trackID " +
-                " INNER JOIN song p ON" +
-                " t.trackID= p.trackID " +
-                "limit 10");
+                "   INNER JOIN tag t ON" +
+                "   st.trackID= t.trackID " +
+                "   INNER JOIN song s ON" +
+                "   st.trackID= s.trackID" +
+                "   INNER JOIN usersongPrice p ON" +
+                "   s.songID= p.songID" +
+                "   limit 100");
         return result.toJSON().collectAsList();
     }
 }

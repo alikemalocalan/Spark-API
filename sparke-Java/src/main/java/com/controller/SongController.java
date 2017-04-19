@@ -1,7 +1,7 @@
 package com.controller;
 
 import com.SparkEngine.Recommendation;
-import com.logging.LogMong;
+import com.logging.UserLog;
 import spark.Request;
 import spark.Response;
 
@@ -12,23 +12,18 @@ import static spark.Spark.get;
  * Created by alikemal on 19.03.2017.
  */
 public class SongController {
-    private final LogMong loging= new LogMong();
+    private final UserLog loging = new UserLog();
 
     public SongController(final Recommendation sparkService) {
         before("/*", (Request request, Response response) -> {
             response.type("application/json");
+        });
+        get("/songs", (request, response) -> sparkService.getSongs());
 
-        });
-        get("/songs", (request, response) -> {
-                        return sparkService.getSongs();
-        });
-
-        get("/userstat", (request, response) -> {
-            return sparkService.getStats();
-        });
+        get("/userstat", (request, response) -> sparkService.getStats());
         get("/getsong", (request, response) -> {
-            loging.insertUserStat( request.queryMap().get("userID").value(), request.queryMap().get("trackID").value());
-            return sparkService.getSongbyTrackID("TRMMMYQ128F932D901");
+            //loging.insert(request.queryMap().get("userID").value(), request.queryMap().get("trackID").value());
+            return sparkService.getSongbyTrackID("TRMMMHY12903CB53F1");
         });
     }
 }

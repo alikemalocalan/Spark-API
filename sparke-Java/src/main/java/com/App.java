@@ -12,6 +12,7 @@ import static spark.Spark.get;
 public class App {
     public static void main(String[] args) {
         get("/", (req, res) -> "Hello World");
-        new SongController(new Recommendation());
+        Recommendation recommendation = new Recommendation();
+        new SongController(recommendation);
     }
 }
