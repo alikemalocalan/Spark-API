@@ -1,6 +1,7 @@
 package com.SparkEngine;
 
 
+import com.logging.UserLog;
 import org.junit.Test;
 
 import static java.lang.System.out;
@@ -12,14 +13,15 @@ import static java.lang.System.out;
 public class RecommendationTest {
     @Test
     public void song() throws Exception {
-        //new Recommendation().getSongs().collectAsList().toString();
-        out.println(new Recommendation().getSongs());
+        //new InitSpark().getSongs().collectAsList().toString();
+        //out.println(new InitSpark().getSongs());
+        new UserLog().insert("123","sdasdasd");
     }
 
     @Test
     public void generic() throws Exception {
-        //new Recommendation().getSongs().collectAsList().toString();
-        out.println(Recommendation.class);
+        //new InitSpark().getSongs().collectAsList().toString();
+        out.println(InitSpark.class);
 
     }
 }

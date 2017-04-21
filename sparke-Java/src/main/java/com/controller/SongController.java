@@ -19,10 +19,10 @@ public class SongController {
             response.type("application/json");
         });
         get("/songs", (request, response) -> sparkService.getSongs());
-
+        get("/liststat", (Request request, Response response) -> sparkService.liststatnumber());
         get("/userstat", (request, response) -> sparkService.getStats());
         get("/getsong", (request, response) -> {
-            //loging.insert(request.queryMap().get("userID").value(), request.queryMap().get("trackID").value());
+            loging.insert(request.queryMap().get("userID").value(), request.queryMap().get("trackID").value());
             return sparkService.getSongbyTrackID("TRMMMHY12903CB53F1");
         });
     }
