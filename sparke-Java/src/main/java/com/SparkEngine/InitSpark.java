@@ -22,16 +22,14 @@ public class InitSpark {
     public static SparkSession spark = null;
     private final Logger LOGGER = LoggerFactory.getLogger(InitSpark.class);
 
-    private final JavaRDD<String> songRead;
-    private final JavaRDD<String> tasteStatRead;
-    private final JavaRDD<String> tagRead;
     private final Dataset<Row> userJson;
     private final Dataset<Row> songJson;
     private final Dataset<Row> tagJson;
 
-    private JavaRDD<Song> songRDD = null;
-    private JavaRDD<TasteStat> tasteRDD = null;
-    private JavaRDD<Tag> tagRDD = null;
+    private final Dataset<Row> tagParq;
+    private final Dataset<Row> songParq;
+    private final Dataset<Row> tasteParq;
+    private final Dataset<Row> ratingJson;
 
     public InitSpark() {
 
@@ -45,61 +43,71 @@ public class InitSpark {
 
 
         //******************************************
-        songRead = spark.read().textFile(Conf.tracks_txt).toJavaRDD();
-        tasteStatRead = spark.read().textFile(Conf.tasteStat_Txt).toJavaRDD();
-        tagRead = spark.read().textFile(Conf.tag_txt).javaRDD();
 
         userJson = spark.read().json(Conf.usersJson_txt);
         songJson = spark.read().json(Conf.songJson_txt);
         tagJson = spark.read().json(Conf.tagJson_txt);
+        ratingJson = spark.read().json(Conf.ratingJson_txt);
 
-        //****************************************
+        tagParq = spark.read().parquet(Conf.tag_parqPATH);
+        tasteParq = spark.read().parquet(Conf.taste_parqPATH);
+        songParq = spark.read().parquet(Conf.song_parqPATH);
+
+
+        //******************************************
+        songParq.createOrReplaceTempView("song");
+
+        tasteParq.createOrReplaceTempView("tastestats");
+
+        tagParq.createOrReplaceTempView("tag");
+
         userJson.createOrReplaceTempView("userjson");
 
         songJson.createOrReplaceTempView("songjson");
 
         tagJson.createOrReplaceTempView("tagjson");
 
+        ratingJson.createOrReplaceTempView("ratingjson");
+
         //*****************************************
-        songRDD = songRead
+
+
+    }
+
+    public void generateParquet() {
+        final JavaRDD<String> songRead = spark.read().textFile(Conf.tracks_txt).toJavaRDD();
+        final JavaRDD<String> tasteStatRead = spark.read().textFile(Conf.tasteStat_Txt).toJavaRDD();
+        final JavaRDD<String> tagRead = spark.read().textFile(Conf.tag_txt).javaRDD();
+
+        JavaRDD<Song> songRDD = songRead
                 .map(lineRAW -> {
                     String[] parts = lineRAW.split(",");
                     return new Song(parts[0], parts[1], parts[2], parts[3]);
                 }).persist(MEMORY_ONLY).cache();
 
         Dataset<Row> songDF = spark.createDataFrame(songRDD, Song.class);
-        songDF.createOrReplaceTempView("song");
+        songDF.write().parquet(Conf.song_parqPATH);
 
         //******************************************
 
-
-        tasteRDD = tasteStatRead.map(lineRAW -> {
+        JavaRDD<TasteStat> tasteRDD = tasteStatRead.map(lineRAW -> {
             String[] parts = lineRAW.split(",");
             return new TasteStat(parts[1], parts[0], Integer.parseInt(parts[2]));
-        }).persist(MEMORY_ONLY).cache();
-        ;
+        });
 
-        Dataset<Row> songPriceDF = spark.createDataFrame(tasteRDD, TasteStat.class);
-        songPriceDF.createOrReplaceTempView("tastestats");
-
+        Dataset<Row> tasteDF = spark.createDataFrame(tasteRDD, TasteStat.class);
+        tasteDF.write().parquet(Conf.taste_parqPATH);
 
         //******************************************
 
-
-        tagRDD = tagRead
+        JavaRDD<Tag> tagRDD = tagRead
                 .map(lineRAW -> {
                     String[] parts = lineRAW.split(",");
                     return new Tag(parts[0], parts[1]);
                 }).persist(MEMORY_ONLY).cache();
-        ;
 
         Dataset<Row> tagDF = spark.createDataFrame(tagRDD, Tag.class);
-        tagDF.createOrReplaceTempView("tag");
-
-
-        //******************************************
-
-
+        tagDF.write().parquet(Conf.taste_parqPATH);
     }
 
 

@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by alikemal on 19.03.2017.
  */
-public class Song implements Serializable {
+public class Song {
     private String trackID;
     private String songID;
     private String songTitle;
