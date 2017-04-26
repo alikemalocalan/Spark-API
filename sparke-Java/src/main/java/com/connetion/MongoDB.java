@@ -14,7 +14,8 @@ public class MongoDB {
     private Jongo jongo;
 
     public MongoDB() {
-        db = new MongoClient("alikemal.org").getDB("myproject");
+        MongoClient mongoClient = new MongoClient("139.162.158.192", 27017);
+        db = mongoClient.getDB("ali_bitirme");
         jongo = new Jongo(db);
     }
 

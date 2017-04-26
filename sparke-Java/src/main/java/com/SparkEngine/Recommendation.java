@@ -1,121 +1,90 @@
 package com.SparkEngine;
 
-/**
- * Created by alikemal on 19.03.2017.
- */
 
-import com.model.Song;
-import com.model.Tag;
-import com.model.UserSales;
-import com.model.UserStat;
-import org.apache.spark.SparkConf;
+import com.google.gson.Gson;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.mllib.recommendation.ALS;
+import org.apache.spark.mllib.recommendation.MatrixFactorizationModel;
+import org.apache.spark.mllib.recommendation.Rating;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Created by alikemal on 21.04.2017.
+ */
 public class Recommendation {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Recommendation.class);
-    private static final String base_txt = "/home/alikemal/IdeaProjects/Spark-API/dataset/";
-
-    private static final String tag_txt = base_txt + "msd-MAGD-genreAssignment-new.cls";
-    private static final String price_txt = base_txt + "train_triplets.txtaa";
-    private static final String userStat_txt = base_txt + "jam_to_msd-new.tsv";
-    private static final String tracks_txt = base_txt + "unique_tracks.txt";
-    private static final String master = "local";
-    private SparkSession spark = null;
+    JavaRDD<Rating> ratings;
 
     public Recommendation() {
-
-        SparkConf conf = new SparkConf()
-                .setAppName(Recommendation.class.getName())
-                .setMaster(master);
-        spark = SparkSession
-                .builder()
-                .config(conf)
-                .getOrCreate();
-
-
-        final JavaRDD<String> songRead = spark.read().textFile(tracks_txt).toJavaRDD();
-        final JavaRDD<String> userSalesRead = spark.read().textFile(price_txt).toJavaRDD();
-        final JavaRDD<String> tagRead = spark.read().textFile(tag_txt).javaRDD();
-        final JavaRDD<String> userRead = spark.read().textFile(userStat_txt).javaRDD();
-
-        //******************************************
-
-
-        JavaRDD<Song> songRDD = songRead
-                .map(lineRAW -> {
-                    String[] parts = lineRAW.split(",");
-                    return new Song(parts[0], parts[1], parts[2], parts[3]);
-                });
-
-        Dataset<Row> songDF = spark.createDataFrame(songRDD, Song.class);
-        songDF.createOrReplaceTempView("song");
-
-        //******************************************
-
-
-        JavaRDD<UserSales> salesRDD = userSalesRead.map(lineRAW -> {
-            String[] parts = lineRAW.split(",");
-            return new UserSales(parts[1], parts[0], parts[2]);
-        });
-
-        Dataset<Row> songPriceDF = spark.createDataFrame(salesRDD, UserSales.class);
-        songPriceDF.createOrReplaceTempView("usersongPrice");
-
-
-        //******************************************
-
-
-        JavaRDD<Tag> tagRDD = tagRead
-                .map(lineRAW -> {
-                    String[] parts = lineRAW.split(",");
-                    return new Tag(parts[0], parts[1]);
-                });
-
-        Dataset<Row> tagDF = spark.createDataFrame(tagRDD, Tag.class);
-        tagDF.createOrReplaceTempView("tag");
-
-
-        //******************************************
-
-
-        JavaRDD<UserStat> userRDD = userRead
-                .map(lineRAW -> {
-                    String[] parts = lineRAW.split(",");
-                    return new UserStat(parts[1], parts[0]);
-                });
-
-        Dataset<Row> userDf = spark.createDataFrame(userRDD, UserStat.class);
-        userDf.createOrReplaceTempView("userStat");
+        ratings = rating().toJavaRDD().map(row ->
+                new Rating((int) row.getLong(4), (int) row.getLong(3), (int) row.getLong(1)));
     }
 
     public List<String> getSongs() {
-        Dataset<Row> result = spark.sql("SELECT * FROM song limit 100");
+        Dataset<Row> result = InitSpark.spark.sql("SELECT * FROM song limit 100");
         return result.toJSON().collectAsList();
     }
 
-    public String getSongbyTrackID(String trackID) {
-        Dataset<Row> result = spark.sql("SELECT * FROM song limit 100").filter(new Column("trackID").equalTo(trackID));
-        return result.toJSON().collectAsList().get(0);
-    }
+    public List<String> getSongbyTrackID(String trackID) {
+        Dataset<Row> result = InitSpark.spark.sql("SELECT * FROM song limit 100").filter(new Column("trackID").equalTo(trackID));
 
-    public List<String> getStats() {
-        Dataset<Row> result = spark.sql("SELECT *   " +
-                "FROM userStat st" +
-                "   INNER JOIN tag t ON" +
-                "   st.trackID= t.trackID " +
-                "   INNER JOIN song s ON" +
-                "   st.trackID= s.trackID" +
-                "   INNER JOIN usersongPrice p ON" +
-                "   s.songID= p.songID" +
-                "   limit 100");
         return result.toJSON().collectAsList();
     }
+
+    public List<String> liststatnumber() {
+        Dataset<Row> rs = InitSpark.spark.sql(
+                "SELECT songID, row_number() OVER ( ORDER BY songID) as id" +
+                        " FROM song group by songID ");
+
+        return rs.toJSON().collectAsList();
+    }
+
+    public Dataset<Row> rating() {
+        return InitSpark.spark.sql("SELECT * FROM ratingjson order by userID limit 200");
+    }
+
+    public String getRecommend() {
+        final int rank = 5, iterations = 1, blocks = -1;
+        ArrayList<String> result = new ArrayList<>();
+
+        MatrixFactorizationModel model = ALS.train(ratings.rdd(), rank, iterations, 0.01, blocks);
+
+        return new Gson().toJson(
+                model.productFeatures().toJavaRDD().map(element ->
+                        (element._1() + "," + Arrays.toString(element._2())))
+                        .collect());
+    }
+
 }
+
+
+/*
+"SELECT u.id,s.id,ts.rating, tj.id " +
+                "FROM tastestats ts" +
+                "   INNER JOIN userjson u ON" +
+                "   ts.userID= u.userID" +
+                "   INNER JOIN songjson s ON" +
+                "   ts.songID= s.songID "  +
+                "   INNER JOIN song sg ON" +
+                "   sg.songID= s.songID "  +
+                "   INNER JOIN tag t ON" +
+                "   sg.trackID= t.trackID "+
+                "   INNER JOIN tagjson tj ON" +
+                "   t.tagID= tj.tagID ");*/
+
+// "SELECT tagID, row_number() OVER ( ORDER BY tagID) as id FROM tag group by tagID ");
+
+/*
+"SELECT *   " +
+            "FROM tastestats st" +
+            "   INNER JOIN song s ON" +
+            "   st.songID= s.songID" +
+            "   INNER JOIN tag t ON" +
+            "   s.trackID= t.trackID " +
+            "   limit 100"
+ */
