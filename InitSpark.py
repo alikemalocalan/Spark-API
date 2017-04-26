@@ -1,11 +1,18 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 
-conf = (SparkConf().set("total-executor-cores", "20").set("executor-memory", "5g"))
-sc = SparkContext(master="local[*]", appName="Spark-API", conf=conf)
-
+conf = (SparkConf()
+        .set("spark.cores.max", 20)
+        .set("spark.executor.memory", "5g")
+        .set("spark.eventLog.compress", "false")
+        .setAppName("Spark-API")
+        .setMaster("local[*]"))
 
 # master="spark://alikemal-300E5C:7077"
+
+sc = SparkContext(conf=conf)
+sc.setLogLevel("INFO")
+
 
 class InitSpark:
     def __init__(self):
