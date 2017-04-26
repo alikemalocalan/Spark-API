@@ -12,13 +12,13 @@ For ubuntu; add spark path your system
 `export HADOOP_HOME='/usr/local/hadoop'`
 
 
-`export SPARK_HOME='/home/alikemal/Genel/spark-2.1.0-bin-hadoop2.7'`
+`export SPARK_HOME='/home/user/spark-2.1.0-bin-hadoop2.7'`
 
 
 `export PATH=$PATH:/usr/local/hadoop/bin/`
 
 
-`export PATH=$PATH:/home/alikemal/Genel/spark-2.1.0-bin-hadoop2.7/bin/`
+`export PATH=$PATH:/home/user/spark-2.1.0-bin-hadoop2.7/bin/`
 
 
 `export PYTHONPATH=$SPARK_HOME/python/:$PYTHONPATH`
