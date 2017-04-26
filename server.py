@@ -1,36 +1,37 @@
 from flask import Flask
 from flask import jsonify
-from pyspark.sql import SparkSession
 
-from recommendationEngine import RecommendationEngine
+from InitSpark import InitSpark
+from Recommendation import Recommendation
 
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
-    return jsonify(engine.songsbySingerFast())
+    return jsonify(engine.getSongs())
 
 
-@app.route('/people/<age>')
-def people(age):
-    return jsonify(engine.people(age))
+@app.route('/songbyID/<trackID>')
+def people(trackID):
+    return jsonify(engine.getSongbyTrackID(trackID))
 
 
 @app.route('/songbysinger/<singer_name>')
-def song(singer_name):
+def songbySinger(singer_name):
     return jsonify(engine.songsbySinger(singer_name))
 
 
-def init_spark_context():
-    spark = SparkSession \
-        .builder \
-        .appName("PythonWordCount") \
-        .getOrCreate()
-    return spark
+@app.route('/rank')
+def song():
+    return jsonify(engine.rating().collect())
 
+
+@app.route('/recommend')
+def recommend():
+    return jsonify(engine.getRecommend())
 
 if __name__ == '__main__':
-    spark = init_spark_context()
-    engine = RecommendationEngine(spark)
+    init = InitSpark()
+    engine = Recommendation(init)
     app.run()

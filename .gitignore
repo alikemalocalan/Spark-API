@@ -33,3 +33,15 @@ dataset/users.json
 sparke-Java/src/test/java/com/services/
 /.gitignore
 /dataset/people.txt
+/dataset/tasteDF.parquet/
+/dataset/tagDF.parquet/
+/dataset/songDF.parquet/
+dataset/songDF.parquet/
+dataset/tagDF.parquet/
+dataset/tasteDF.parquet/
+/dataset/
+InitSpark.pyc
+Recommendation.pyc
+dataset/ADM/
+dataset/archive/
+dataset/unique_artists.txt
