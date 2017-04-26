@@ -1,7 +1,5 @@
 package com.model;
 
-import java.io.Serializable;
-
 /**
  * Created by alikemal on 19.03.2017.
  */

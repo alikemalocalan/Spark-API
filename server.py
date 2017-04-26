@@ -31,6 +31,7 @@ def song():
 def recommend():
     return jsonify(engine.getRecommend())
 
+
 if __name__ == '__main__':
     init = InitSpark()
     engine = Recommendation(init)
