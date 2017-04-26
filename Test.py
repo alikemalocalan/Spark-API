@@ -1,44 +1,6 @@
 from flask import Flask, jsonify
 from flask import request
 from flask_request_params import bind_request_params
-from pyspark import Row
-from pyspark.sql import SparkSession
-
-from LogModels import UserLog
-
-
-def sparktest():
-    spark = SparkSession \
-        .builder \
-        .appName("Spark Test") \
-        .getOrCreate()
-
-    sc = spark.sparkContext
-
-    tracks_txt = "dataset/unique_tracks.txt"
-
-    track_raw_RDD = sc.textFile(tracks_txt)
-
-    track_parts = track_raw_RDD.map(lambda l: l.split(",")) \
-        .map(lambda p: Row(trackID=p[0], songID=p[1], artistName=p[2], songTitle=p[3])) \
-        .cache()
-
-    schemaSongs = spark.createDataFrame(track_parts)
-    schemaSongs.createOrReplaceTempView("song")
-    print("\n\n AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-
-    result = schemaSongs \
-        .limit(10) \
-        .orderBy(schemaSongs.artistName)
-    print("\n\n BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-
-    result1 = result \
-        .limit(10) \
-        .orderBy(result.songTitle) \
-        .show()
-
-    print("\n\n CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
-
 
 app = Flask(__name__)
 
@@ -85,14 +47,14 @@ def after_request(resp):
 
 @app.route('/')
 def index():
-    UserLog(email="alikemal@gmail.com",
-            # Use `force_insert` so that we get a DuplicateKeyError if
-            # another user already exists with the same email address.
-            # Without this option, we will update (replace) the user with
-            # the same id (email).
-            password="123456").save(force_insert=True)
+    # UserLog(email="alikemal@gmail.com",
+    # Use `force_insert` so that we get a DuplicateKeyError if
+    # another user already exists with the same email address.
+    # Without this option, we will update (replace) the user with
+    # the same id (email).
+    # password="123456").save(force_insert=True)
     return jsonify(request.params)
 
 
 if __name__ == '__main__':
-    sparktest()
+    app.run()
