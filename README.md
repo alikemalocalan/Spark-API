@@ -25,7 +25,7 @@ For ubuntu; add spark path your system
 
 
 
-##Run Command
+## Run Command
 
 
 `spark-submit server.py`
