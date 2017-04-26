@@ -1,10 +1,11 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 
-conf = (SparkConf().set("num-executors", "4") \
-        .set("spark.cores.max", "4"))
-sc = SparkContext(master="spark://alikemal-300E5C:7077", appName="MyApp", conf=conf)
+conf = (SparkConf().set("total-executor-cores", "20").set("executor-memory", "5g"))
+sc = SparkContext(master="local[*]", appName="MyApp", conf=conf)
 
+
+# master="spark://alikemal-300E5C:7077"
 
 class InitSpark:
     def __init__(self):
@@ -14,7 +15,7 @@ class InitSpark:
 
         """Init the recommendation engine given a Spark context and a dataset path
         """
-        self.base_txt = "/home/alikemal/IdeaProjects/Spark-API/dataset/"
+        self.base_txt = "dataset/"
         self.tag_txt = self.base_txt + "msd-MAGD-genreAssignment-new.cls"
         self.jamStat_txt = self.base_txt + "jam_to_msd-new.tsv"
         self.tracks_txt = self.base_txt + "unique_tracks.tsv"
