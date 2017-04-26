@@ -4,7 +4,8 @@ Apache Spark Recommendation/DataMinig Api Service
 
 `sudo pip install flask`
 
-##İnstall Spark Your System
+
+## Install Spark Your System
 
 For ubuntu; add spark path your system
 
