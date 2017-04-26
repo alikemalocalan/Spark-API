@@ -2,7 +2,7 @@ from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 
 conf = (SparkConf().set("total-executor-cores", "20").set("executor-memory", "5g"))
-sc = SparkContext(master="local[*]", appName="MyApp", conf=conf)
+sc = SparkContext(master="local[*]", appName="Spark-API", conf=conf)
 
 
 # master="spark://alikemal-300E5C:7077"
@@ -13,8 +13,6 @@ class InitSpark:
             .builder \
             .getOrCreate()
 
-        """Init the recommendation engine given a Spark context and a dataset path
-        """
         self.base_txt = "dataset/"
         self.tag_txt = self.base_txt + "msd-MAGD-genreAssignment-new.cls"
         self.jamStat_txt = self.base_txt + "jam_to_msd-new.tsv"
@@ -52,10 +50,3 @@ class InitSpark:
         # #  Alternative
         result = self.spark.sql("SELECT * FROM song WHERE artistName LIKE '%s' LIMIT 20" % singer_name).collect()
         return result
-
-
-
-        # def people(self, age):
-        #     # SQL can be run over DataFrames that have been registered as a table.
-        #     result = self.spark.sql("SELECT * FROM people WHERE age LIKE %s" % int(age)).collect()
-        #     return result

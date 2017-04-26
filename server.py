@@ -14,7 +14,7 @@ def index():
 
 @app.route('/songbyID/<trackID>')
 def people(trackID):
-    return jsonify(engine.getSongbyTrackID(trackID))
+    return jsonify(engine.songbyTrackID(trackID))
 
 
 @app.route('/songbysinger/<singer_name>')
