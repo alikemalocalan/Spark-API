@@ -16,7 +16,6 @@ class InitSpark:
         """
         self.base_txt = "/home/alikemal/IdeaProjects/Spark-API/dataset/"
         self.tag_txt = self.base_txt + "msd-MAGD-genreAssignment-new.cls"
-        self.tasteStat_Txt = self.base_txt + "train_triplets.aa.tsv"
         self.jamStat_txt = self.base_txt + "jam_to_msd-new.tsv"
         self.tracks_txt = self.base_txt + "unique_tracks.tsv"
         self.usersJson_txt = self.base_txt + "users.json"

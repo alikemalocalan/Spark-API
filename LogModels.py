@@ -1,7 +1,7 @@
 from pymodm import MongoModel, EmbeddedMongoModel, fields, connect
 
 # Establish a connection to the database.
-connect('mongodb://localhost:27017/myproject')
+connect('mongodb://alikemal.org:27017/myproject')
 
 
 class UserLog(MongoModel):
