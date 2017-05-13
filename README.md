@@ -30,6 +30,8 @@ For ubuntu; add spark path your system
 
 `spark-submit server.py`
 
+'spark-submit --packages org.mongodb.spark:mongo-spark-connector_2.11:2.0.0 server.py'
+
 
 ## Example HTTp Request
 
