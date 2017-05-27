@@ -28,9 +28,3 @@ class Mining:
 
 
 mining = Mining()
-print(mining.mean_users_age())
-print(mining.gender_counter_male_female())
-print(pd.Series(mining.counter_user_country_by_country).to_json())
-print(pd.Series(mining.user_df['country'].unique().shape[0]).to_json())
-print(mining.gender_counter_country_by_country())
-print(pd.Series(mining.age_mean_country_by_country()).to_json())
