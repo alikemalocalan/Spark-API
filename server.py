@@ -27,7 +27,7 @@ def index():
 def people():
     param = request.args.get('q')
     if param:
-        return jsonify(engine.songsbySongName(param))
+        return None
     if not param:
         return "Parametre Hatası"
 
@@ -48,20 +48,19 @@ def songbySinger():
 @app.route('/playlistRecommendation', methods=['GET'])
 def song():
     typeparam = int(request.args.get('type'))
-    userid = int(request.args.get('userid'))
-    print(userid)
-    if (typeparam == 0):
-        result = engine.listSong().toJSON().collect()
+    userid = request.args.get('userid')
+    if typeparam == 0:
+        result = engine.listRating().toJSON().collect()
         return flask.Response(result)
-    if (typeparam == 1):
-        result = engine.ratingbyUserID(userid)
+    elif typeparam == 1:
+        result = engine.ratingbyUserID(int(userid))
         return jsonify(result)
-    if (typeparam == 2):
-        result = engine.getRecommend(userid).toJSON().collect()
+    elif typeparam == 2:
+        result = None
         return flask.Response(result)
-    if (typeparam == 3):
-        return jsonify(request.args)
-    if (typeparam == 4):
+    elif typeparam == 3:
+        return None
+    elif typeparam == 4:
         return jsonify(request.args)
 
 
@@ -70,7 +69,7 @@ mining = Mining()
 
 @app.route('/test')
 def test():
-    result = mining.mean_users_age()
+    result = engine.generateParquet()
     return flask.Response(result)
 
 
