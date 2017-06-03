@@ -25,10 +25,10 @@ public class InitSpark {
     private final Dataset<Row> userJson;
     private final Dataset<Row> songJson;
     private final Dataset<Row> tagJson;
-
+/*
     private final Dataset<Row> tagParq;
     private final Dataset<Row> songParq;
-    private final Dataset<Row> tasteParq;
+    private final Dataset<Row> tasteParq;*/
     private final Dataset<Row> ratingJson;
 
     public InitSpark() {
@@ -49,17 +49,17 @@ public class InitSpark {
         tagJson = spark.read().json(Conf.tagJson_txt);
         ratingJson = spark.read().json(Conf.ratingJson_txt);
 
-        tagParq = spark.read().parquet(Conf.tag_parqPATH);
+        /*tagParq = spark.read().parquet(Conf.tag_parqPATH);
         tasteParq = spark.read().parquet(Conf.taste_parqPATH);
         songParq = spark.read().parquet(Conf.song_parqPATH);
 
 
-        //******************************************
+        /*//******************************************
         songParq.createOrReplaceTempView("song");
 
         tasteParq.createOrReplaceTempView("tastestats");
 
-        tagParq.createOrReplaceTempView("tag");
+        tagParq.createOrReplaceTempView("tag");*/
 
         userJson.createOrReplaceTempView("userjson");
 
@@ -74,7 +74,8 @@ public class InitSpark {
 
     }
 
-    public void generateParquet() {
+    public static String generateParquet() {
+
         final JavaRDD<String> songRead = spark.read().textFile(Conf.tracks_txt).toJavaRDD();
         final JavaRDD<String> tasteStatRead = spark.read().textFile(Conf.tasteStat_Txt).toJavaRDD();
         final JavaRDD<String> tagRead = spark.read().textFile(Conf.tag_txt).javaRDD();
@@ -107,7 +108,8 @@ public class InitSpark {
                 }).persist(MEMORY_ONLY).cache();
 
         Dataset<Row> tagDF = spark.createDataFrame(tagRDD, Tag.class);
-        tagDF.write().parquet(Conf.taste_parqPATH);
+        tagDF.write().parquet(Conf.tag_parqPATH);
+        return "ok";
     }
 
 

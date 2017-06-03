@@ -1,8 +1,12 @@
+import flask
 from flask import Flask, jsonify
 from flask import request
 from flask_request_params import bind_request_params
 
+from UserMining import Mining
+
 app = Flask(__name__)
+usermining = Mining()
 
 
 def save_request(request):
@@ -46,14 +50,9 @@ def after_request(resp):
 
 
 @app.route('/')
-def index():
-    # UserLog(email="alikemal@gmail.com",
-    # Use `force_insert` so that we get a DuplicateKeyError if
-    # another user already exists with the same email address.
-    # Without this option, we will update (replace) the user with
-    # the same id (email).
-    # password="123456").save(force_insert=True)
-    return jsonify(request.params)
+def user_age():
+    result = usermining.mean_users_age()
+    return flask.Response(result)
 
 
 if __name__ == '__main__':

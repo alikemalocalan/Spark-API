@@ -37,11 +37,11 @@ public class Recommendation {
     }
 
     public List<String> liststatnumber() {
-        Dataset<Row> rs = InitSpark.spark.sql(
-                "SELECT songID, row_number() OVER ( ORDER BY songID) as id" +
-                        " FROM song group by songID ");
-
-        return rs.toJSON().collectAsList();
+        Dataset<Row> result = InitSpark.spark.sql("SELECT * " +
+                "FROM tagjson tj " +
+                "   limit 1");
+        result.show();
+        return result.toJSON().collectAsList();
     }
 
     public Dataset<Row> rating() {
@@ -74,8 +74,8 @@ public class Recommendation {
                 "   sg.songID= s.songID "  +
                 "   INNER JOIN tag t ON" +
                 "   sg.trackID= t.trackID "+
-                "   INNER JOIN tagjson tj ON" +
-                "   t.tagID= tj.tagID ");*/
+                    "   INNER JOIN tagjson tj ON" +
+                    "   t.tagID= tj.tagID ");*/
 
 // "SELECT tagID, row_number() OVER ( ORDER BY tagID) as id FROM tag group by tagID ");
 
