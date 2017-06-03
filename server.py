@@ -1,3 +1,5 @@
+﻿# -*- coding: utf-8 -*- 
+# !/usr/bin/env python
 import flask
 from flask import Flask, request, jsonify
 
@@ -50,13 +52,13 @@ def song():
     typeparam = int(request.args.get('type'))
     userid = request.args.get('userid')
     if typeparam == 0:
-        result = engine.listRating().toJSON().collect()
+        result = engine.listPopulerSong()
         return flask.Response(result)
     elif typeparam == 1:
         result = engine.ratingbyUserID(int(userid))
         return jsonify(result)
     elif typeparam == 2:
-        result = None
+        result = engine.listPopulerGenre(int(userid))
         return flask.Response(result)
     elif typeparam == 3:
         return None
@@ -75,4 +77,4 @@ def test():
 
 if __name__ == '__main__':
     engine = Recommendation()
-    app.run(host='0.0.0.0')
+    app.run(host='192.168.2.106')
