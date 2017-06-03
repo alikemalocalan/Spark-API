@@ -1,8 +1,15 @@
+import numpy as np
 from pyspark.mllib.recommendation import ALS
 from pyspark.sql import DataFrame
 
 from InitSpark import InitSpark
 
+
+def parse(x):
+    try:
+        return int(x)
+    except ValueError:
+        return np.nan
 
 class Recommendation:
     def __init__(self):
@@ -14,32 +21,49 @@ class Recommendation:
         return self.init.generateParquet()
 
     def listRating(self) -> DataFrame:
-        result = self.spark.sql("SELECT * FROM rating limit 50")
+        result = self.spark.sql("SELECT * FROM rating")
         return result
+
+    def listPopulerSong(self) -> DataFrame:
+        result = self.spark.sql("SELECT r.songid as product,0 as type FROM rating as r ORDER BY r.rating DESC LIMIT 20")
+        result.show()
+        result.write.format("com.mongodb.spark.sql.DefaultSource") \
+            .mode("append").save()
+        return "ok"
+
+    def listPopulerGenre(self, userid) -> str:
+        ratingsRDD = self.listRating().rdd \
+            .map(lambda l: (int(l[3]), int(l[0]), float(l[1])))
+        ratings = self.spark.createDataFrame(ratingsRDD)
+        model = ALS.train(ratings, rank=5, iterations=5)
+        recommend = model.recommendProducts(userid, 3)
+        listRC = []
+        for rate in recommend:
+            listRC.append(int(rate[1]))
+        df1 = self.spark.sql(
+            "SELECT * FROM (SELECT r.genreID as genreID, r.songid as product ,2 as type,'%s' as userid,rank() OVER (PARTITION BY r.genreID ORDER BY r.rating DESC) as rank FROM rating as r) s WHERE rank < 4" % userid)
+
+        result = df1.filter(
+            (df1['genreID'] == listRC[0]) | (df1['genreID'] == listRC[1]) | (df1['genreID'] == listRC[2])).select(
+            'product', 'type', 'userid')
+        result.show()
+        result.write.format("com.mongodb.spark.sql.DefaultSource") \
+            .mode("append").save()
+        return "ok"
 
     def ratingbyUserID(self, userid):
         ratingsRDD = self.listRating().rdd \
             .map(lambda l: (int(l[3]), int(l[2]), float(l[1])))
-
         ratings = self.spark.createDataFrame(ratingsRDD)
 
-        (training, test) = ratings.randomSplit([0.8, 0.2])
-
-        model = ALS.train(training, rank=5, iterations=5)
-
-        # Generate top 10 movie recommendations for each user
-        # usermodel = model.recommendProducts(userid,10)
-        # Generate top 10 user recommendations for each movie
-        # movieRecs = model.recommendUsersForProducts(10)
-
-        return self.writeToMOngo(model.recommendProducts(userid, 10), userid, 0)
-
-    def writeToMOngo(self, recommendations: list, userid, typeid) -> str:
+        model = ALS.train(ratings, rank=5, iterations=5)
+        recommend = model.recommendProducts(userid, 10)
+        for rate in recommend:
+            print(rate)
         rmd = []
-        for rate in recommendations:
-            rmd.append({"userid": userid, "product": rate.product, "type": typeid})
+        for rate in recommend:
+            rmd.append({"userid": userid, "product": rate.product, "type": 1})
         df = self.spark.createDataFrame(rmd)
-        df.show()
         df.write.format("com.mongodb.spark.sql.DefaultSource") \
             .mode("append").save()
         return "ok"
@@ -48,32 +72,6 @@ class Recommendation:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        # ("SELECT sj.songID as sarkiId"
-        #  ",s.songTitle as sarkiismi"
-        #  ",s.artistName as sanatciIsmi"
-        #  ",tj.id as genreId   " +
-        #  "FROM song s" +
-        #  "   INNER JOIN songjson sj ON" +
-        #  "   sj.songID= s.songID" +
-        #  "   INNER JOIN tag t ON" +
-        #  "   s.trackID= t.trackID " +
-        #  "   INNER JOIN tagjson tj ON" +
-        #  "   t.tagID= tj.tagID"+
-        #  " order by s.songTitle limit 20")
-
         # "SELECT songID, row_number() OVER ( ORDER BY songID) as sarkiId"
         # ",songTitle as sarkiismi"
         # ",trackID"
@@ -81,17 +79,4 @@ class Recommendation:
         # ",genreId as genreId   " +
         # "FROM song "
 
-        # ("SELECT " +
-        #  "s.trackID as trackID" +
-        #  ",sj.id as ID" +
-        #  ",sj.songID as songID" +
-        #  ",s.songTitle as songTitle" +
-        #  ",s.artistName as artistName" +
-        #  ",tj.id as genreId   " +
-        #  "FROM song s" +
-        #  "   INNER JOIN songjson sj ON" +
-        #  "   sj.songID= s.songID" +
-        #  "   INNER JOIN tag t ON" +
-        #  "   s.trackID= t.trackID " +
-        #  "   INNER JOIN tagjson tj ON" +
         #  "   t.tagID= tj.tagID ")
