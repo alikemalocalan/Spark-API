@@ -1,3 +1,5 @@
+import json
+
 from pyspark.mllib.recommendation import ALS
 
 from InitSpark import InitSpark
@@ -14,10 +16,8 @@ class Recommendation:
 
     def listPopulerSong(self) -> str:
         result = self.spark.sql("SELECT r.songid as product,0 as type FROM rating as r ORDER BY r.rating DESC LIMIT 20")
-        liste = []
-        for x in result.toJSON().collect():
-            liste.append(x)
-        return liste
+
+        return json.dumps(result.toJSON().collect())
 
     def listPopulerGenre(self, userid) -> str:
         ratingsRDD = self.spark.sql("SELECT * FROM rating").rdd \

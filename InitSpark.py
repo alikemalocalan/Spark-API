@@ -45,9 +45,8 @@ class InitSpark:
             .createOrReplaceTempView("temprating")
         self.spark.read.parquet(self.song_parqPATH).persist(StorageLevel.MEMORY_ONLY) \
             .createOrReplaceTempView("song")
-        #
-        self.spark.sql(
-            "(select genreID,rating,songid,userid from temprating) union (select genreID,rating,songid,userid from mongo)") \
+        # "(select genreID,rating,songid,userid from temprating) union (select genreID,rating,songid,userid from mongo)"
+        self.spark.sql("select genreID,rating,songid,userid from temprating") \
             .createOrReplaceTempView("rating")
 
     def generateParquet(self):
