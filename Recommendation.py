@@ -14,7 +14,10 @@ class Recommendation:
 
     def listPopulerSong(self) -> str:
         result = self.spark.sql("SELECT r.songid as product,0 as type FROM rating as r ORDER BY r.rating DESC LIMIT 20")
-        return result.toJSON().collect()
+        liste = []
+        for x in result.toJSON().collect():
+            liste.append(x)
+        return liste
 
     def listPopulerGenre(self, userid) -> str:
         ratingsRDD = self.spark.sql("SELECT * FROM rating").rdd \
@@ -26,12 +29,12 @@ class Recommendation:
         for rate in recommend:
             listRC.append(int(rate[1]))
         df1 = self.spark.sql(
-            "SELECT * FROM (SELECT r.genreID as genreID, r.songid as product ,2 as type,'%d' as userid,rank() OVER (PARTITION BY r.genreID ORDER BY r.rating DESC) as rank FROM rating as r) s WHERE rank < 4" % userid)
+            "SELECT * FROM (SELECT r.genreID as genreID, r.songid as product ,2 as type,{0} as userid,rank() OVER (PARTITION BY r.genreID ORDER BY r.rating DESC) as rank FROM rating as r) s WHERE rank < 4".format(
+                userid))
 
         result = df1.filter(
             (df1['genreID'] == listRC[0]) | (df1['genreID'] == listRC[1]) | (df1['genreID'] == listRC[2])).select(
             'product', 'type', 'userid')
-        result.show()
         result.write.format("com.mongodb.spark.sql.DefaultSource") \
             .mode("append").save()
         return "ok"
@@ -43,18 +46,13 @@ class Recommendation:
 
         model = ALS.train(ratings, rank=5, iterations=5)
         recommend = model.recommendProducts(userid, 10)
-        for rate in recommend:
-            print(rate)
         rmd = []
         for rate in recommend:
             rmd.append({"userid": userid, "product": rate.product, "type": 1})
-        df = self.spark.createDataFrame(rmd)
-        df.write.format("com.mongodb.spark.sql.DefaultSource") \
+        self.spark.createDataFrame(rmd).write.format("com.mongodb.spark.sql.DefaultSource") \
             .mode("append").save()
         return "ok"
 
-    def genreRate(self):
-        return self.spark.sql("select  count(genreID)as rating ,genreID  from song group by genreID").toJSON().collect()
 
         # "SELECT songID, row_number() OVER ( ORDER BY songID) as sarkiId"
         # ",songTitle as sarkiismi"

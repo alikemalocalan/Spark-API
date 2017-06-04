@@ -47,7 +47,7 @@ def song():
     userid = request.args.get('userid')
     if typeparam == 0:
         result = engine.listPopulerSong()
-        return flask.Response(result)
+        return flask.Response(jsonify(result))
     elif typeparam == 1:
         result = engine.ratingbyUserID(int(userid))
         return jsonify(result)

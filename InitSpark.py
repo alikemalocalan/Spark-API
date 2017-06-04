@@ -45,10 +45,11 @@ class InitSpark:
             .createOrReplaceTempView("temprating")
         self.spark.read.parquet(self.song_parqPATH).persist(StorageLevel.MEMORY_ONLY) \
             .createOrReplaceTempView("song")
-
+        #
         self.spark.sql(
-            "(select genreID,rating,songid,userid from temprating limit 1) union (select genreID,rating,songid,userid from mongo)") \
+            "(select genreID,rating,songid,userid from temprating) union (select genreID,rating,songid,userid from mongo)") \
             .createOrReplaceTempView("rating")
+
     def generateParquet(self):
         # track_line = self.sc.textFile(self.train_txt)
         # songs = track_line.map(lambda l: l.split(",")) \
