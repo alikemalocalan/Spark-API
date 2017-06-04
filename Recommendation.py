@@ -21,12 +21,12 @@ class Recommendation:
             .map(lambda l: (int(l[3]), int(l[0]), float(l[1])))
         ratings = self.spark.createDataFrame(ratingsRDD)
         model = ALS.train(ratings, rank=5, iterations=5)
-        recommend = model.recommendProducts(userid, 3)
+        recommend = model.recommendProductsForUsers(3)
         listRC = []
         for rate in recommend:
             listRC.append(int(rate[1]))
         df1 = self.spark.sql(
-            "SELECT * FROM (SELECT r.genreID as genreID, r.songid as product ,2 as type,'%s' as userid,rank() OVER (PARTITION BY r.genreID ORDER BY r.rating DESC) as rank FROM rating as r) s WHERE rank < 4" % userid)
+            "SELECT * FROM (SELECT r.genreID as genreID, r.songid as product ,2 as type,'%d' as userid,rank() OVER (PARTITION BY r.genreID ORDER BY r.rating DESC) as rank FROM rating as r) s WHERE rank < 4" % userid)
 
         result = df1.filter(
             (df1['genreID'] == listRC[0]) | (df1['genreID'] == listRC[1]) | (df1['genreID'] == listRC[2])).select(
