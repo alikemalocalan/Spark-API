@@ -1,4 +1,4 @@
-from pyspark import SparkConf, SparkContext, StorageLevel, Row
+from pyspark import SparkConf, SparkContext, StorageLevel
 from pyspark.sql import SparkSession
 
 conf = (SparkConf()
@@ -10,10 +10,6 @@ conf = (SparkConf()
 
 # master="spark://alikemal-300E5C:7077"
 #  spark://192.168.2.106:7077
-# custom_schema = StructType({
-#     StructField("userid", IntegerType(), False),
-#     StructField("songid", IntegerType(), False),
-#     StructField("rating", LongType(), False)})
 
 
 class InitSpark:
@@ -32,14 +28,15 @@ class InitSpark:
             .getOrCreate()
 
         self.base_txt = "dataset/"
-        self.usercsv_txt = self.base_txt + "userid-profile.tsv"
-
+        self.usercsv_txt = self.base_txt + "users.json"
+        self.oneksongs = self.base_txt + "1ksong.json"
         self.ratingParq = self.base_txt + "rating.json"
         self.song_parqPATH = self.base_txt + "songs.parquet"
 
-        # userJson = self.spark.read.json(self.usersJson_txt).persist(StorageLevel.MEMORY_ONLY).cache() \
-        #     .createOrReplaceTempView("userjson")
-
+        userJson = self.spark.read.json(self.usercsv_txt).persist(StorageLevel.MEMORY_ONLY).cache() \
+            .createOrReplaceTempView("1kuser")
+        self.spark.read.load(self.oneksongs, format='json').persist(StorageLevel.MEMORY_ONLY).cache() \
+            .createOrReplaceTempView("1ksong")
         self.spark.read.load(self.ratingParq, format='json').persist(StorageLevel.MEMORY_ONLY).cache() \
             .createOrReplaceTempView("rating")
         self.spark.read.parquet(self.song_parqPATH).persist(StorageLevel.MEMORY_ONLY) \
@@ -70,15 +67,20 @@ class InitSpark:
         #                       " FROM song as s "
         #                       "   INNER JOIN train as t ON "
         #                       "s.songID=t.songID").write.save(self.base_txt + "rating.json", format='json')
-        # return "ok"
+        return "ok"
 
 
-        track_line = self.sc.textFile(self.base_txt + "userid-timestamp-artid-artname-traid-traname.tsv")
-        songs = track_line.map(lambda l: l.split("\t")) \
-            .map(lambda p: Row(user=str(p[0]), artname=str(p[3]), traname=str(p[5]))) \
-            .take(1000000)
+        # track_line = self.sc.textFile(self.base_txt + "userid-timestamp-artid-artname-traid-traname.tsv")
+        # songs = track_line.map(lambda l: l.split("\t")) \
+        #     .map(lambda p: Row(user=str(p[0]), artname=str(p[3]), traname=str(p[5]))) \
+        #     .take(1000000)
 
         # Infer the schema, and register the DataFrame as a table.
-        schemaSongs = self.spark.createDataFrame(songs)
-        schemaSongs.show()
-        schemaSongs.write.save(self.base_txt + "1ksong.json", format='json')
+
+        #         track_line = self.sc.textFile(self.usercsv_txt)
+        #         songs = track_line.map(lambda l: l.split(",")) \
+        #             .map(lambda p: Row(userid=str(p[0]), gender=str(p[1]),age=str(p[2]), country=str(p[3])))
+        #
+        #         schemaSongs = self.spark.createDataFrame(songs)
+        #         schemaSongs.show()
+        #         schemaSongs.write.save(self.base_txt + "users.json", format='json')

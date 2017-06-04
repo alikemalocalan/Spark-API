@@ -11,6 +11,7 @@ def parse(x):
     except ValueError:
         return np.nan
 
+
 class Recommendation:
     def __init__(self):
         self.init = InitSpark()

@@ -77,4 +77,4 @@ def test():
 
 if __name__ == '__main__':
     engine = Recommendation()
-    app.run(host='192.168.2.106')
+    app.run(host='0.0.0.0')
