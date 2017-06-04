@@ -21,7 +21,7 @@ class Recommendation:
             .map(lambda l: (int(l[3]), int(l[0]), float(l[1])))
         ratings = self.spark.createDataFrame(ratingsRDD)
         model = ALS.train(ratings, rank=5, iterations=5)
-        recommend = model.recommendProductsForUsers(3)
+        recommend = model.recommendProducts(userid, 3)
         listRC = []
         for rate in recommend:
             listRC.append(int(rate[1]))
@@ -53,6 +53,8 @@ class Recommendation:
             .mode("append").save()
         return "ok"
 
+    def genreRate(self):
+        return self.spark.sql("select  count(genreID)as rating ,genreID  from song group by genreID").toJSON().collect()
 
         # "SELECT songID, row_number() OVER ( ORDER BY songID) as sarkiId"
         # ",songTitle as sarkiismi"
