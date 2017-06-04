@@ -1,4 +1,4 @@
-from pyspark import SparkConf, SparkContext, StorageLevel
+from pyspark import SparkConf, SparkContext, StorageLevel, Row
 from pyspark.sql import SparkSession
 
 conf = (SparkConf()
@@ -69,7 +69,6 @@ class InitSpark:
         #                       "s.songID=t.songID").write.save(self.base_txt + "rating.json", format='json')
         return "ok"
 
-
         # track_line = self.sc.textFile(self.base_txt + "userid-timestamp-artid-artname-traid-traname.tsv")
         # songs = track_line.map(lambda l: l.split("\t")) \
         #     .map(lambda p: Row(user=str(p[0]), artname=str(p[3]), traname=str(p[5]))) \
@@ -84,3 +83,12 @@ class InitSpark:
         #         schemaSongs = self.spark.createDataFrame(songs)
         #         schemaSongs.show()
         #         schemaSongs.write.save(self.base_txt + "users.json", format='json')
+
+
+        track_line = self.sc.textFile(self.usercsv_txt)
+        songs = track_line.map(lambda l: l.split(",")) \
+            .map(lambda p: Row(userid=str(p[0]), gender=str(p[1]), age=str(p[2]), country=str(p[3])))
+
+        schemaSongs = self.spark.createDataFrame(songs)
+        schemaSongs.show()
+        schemaSongs.write.save(self.base_txt + "users.json", format='json')

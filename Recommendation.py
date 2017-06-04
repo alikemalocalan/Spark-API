@@ -25,7 +25,7 @@ class Recommendation:
         result = self.spark.sql("SELECT * FROM rating")
         return result
 
-    def listPopulerSong(self) -> DataFrame:
+    def listPopulerSong(self) -> str:
         result = self.spark.sql("SELECT r.songid as product,0 as type FROM rating as r ORDER BY r.rating DESC LIMIT 20")
         result.show()
         result.write.format("com.mongodb.spark.sql.DefaultSource") \
@@ -33,7 +33,7 @@ class Recommendation:
         return "ok"
 
     def listPopulerGenre(self, userid) -> str:
-        ratingsRDD = self.listRating().rdd \
+        ratingsRDD = self.spark.sql("SELECT * FROM rating").rdd \
             .map(lambda l: (int(l[3]), int(l[0]), float(l[1])))
         ratings = self.spark.createDataFrame(ratingsRDD)
         model = ALS.train(ratings, rank=5, iterations=5)
