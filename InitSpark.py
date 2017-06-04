@@ -33,15 +33,22 @@ class InitSpark:
         self.ratingParq = self.base_txt + "rating.json"
         self.song_parqPATH = self.base_txt + "songs.parquet"
 
-        userJson = self.spark.read.json(self.usercsv_txt).persist(StorageLevel.MEMORY_ONLY).cache() \
+        df = self.spark.read.format("com.mongodb.spark.sql.DefaultSource") \
+            .option("uri",
+                    "mongodb://alikemal:123456alikemal@alikemal.org:27017/admin.historySongs?authMechanism=SCRAM-SHA-1").load()
+        df.createOrReplaceTempView("mongo")
+        self.spark.read.json(self.usercsv_txt).persist(StorageLevel.MEMORY_ONLY).cache() \
             .createOrReplaceTempView("1kuser")
         self.spark.read.load(self.oneksongs, format='json').persist(StorageLevel.MEMORY_ONLY).cache() \
             .createOrReplaceTempView("1ksong")
         self.spark.read.load(self.ratingParq, format='json').persist(StorageLevel.MEMORY_ONLY).cache() \
-            .createOrReplaceTempView("rating")
+            .createOrReplaceTempView("temprating")
         self.spark.read.parquet(self.song_parqPATH).persist(StorageLevel.MEMORY_ONLY) \
             .createOrReplaceTempView("song")
 
+        self.spark.sql(
+            "(select genreID,rating,songid,userid from temprating limit 1) union (select genreID,rating,songid,userid from mongo)") \
+            .createOrReplaceTempView("rating")
     def generateParquet(self):
         # track_line = self.sc.textFile(self.train_txt)
         # songs = track_line.map(lambda l: l.split(",")) \

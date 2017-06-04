@@ -1,15 +1,6 @@
-import numpy as np
 from pyspark.mllib.recommendation import ALS
-from pyspark.sql import DataFrame
 
 from InitSpark import InitSpark
-
-
-def parse(x):
-    try:
-        return int(x)
-    except ValueError:
-        return np.nan
 
 
 class Recommendation:
@@ -20,10 +11,6 @@ class Recommendation:
 
     def generateParquet(self) -> str:
         return self.init.generateParquet()
-
-    def listRating(self) -> DataFrame:
-        result = self.spark.sql("SELECT * FROM rating")
-        return result
 
     def listPopulerSong(self) -> str:
         result = self.spark.sql("SELECT r.songid as product,0 as type FROM rating as r ORDER BY r.rating DESC LIMIT 20")
@@ -53,7 +40,7 @@ class Recommendation:
         return "ok"
 
     def ratingbyUserID(self, userid):
-        ratingsRDD = self.listRating().rdd \
+        ratingsRDD = self.spark.sql("SELECT * FROM rating").rdd \
             .map(lambda l: (int(l[3]), int(l[2]), float(l[1])))
         ratings = self.spark.createDataFrame(ratingsRDD)
 
@@ -70,14 +57,9 @@ class Recommendation:
         return "ok"
 
 
-
-
-
         # "SELECT songID, row_number() OVER ( ORDER BY songID) as sarkiId"
         # ",songTitle as sarkiismi"
         # ",trackID"
         # ",artistName as sanatciIsmi"
         # ",genreId as genreId   " +
         # "FROM song "
-
-        #  "   t.tagID= tj.tagID ")
