@@ -17,7 +17,7 @@ class Recommendation:
     def listPopulerSong(self) -> str:
         result = self.spark.sql("SELECT r.songid as product,0 as type FROM rating as r ORDER BY r.rating DESC LIMIT 20")
 
-        return json.dumps(result.toJSON().collect())
+        return result.toJSON().collect().collect().__str__()
 
     def listPopulerGenre(self, userid) -> str:
         ratingsRDD = self.spark.sql("SELECT * FROM rating").rdd \
